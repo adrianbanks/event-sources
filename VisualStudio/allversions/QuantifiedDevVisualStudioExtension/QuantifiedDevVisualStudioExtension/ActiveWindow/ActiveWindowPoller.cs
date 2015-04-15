@@ -26,6 +26,7 @@ namespace N1self.C1selfVisualStudioExtension.ActiveWindow
 
         private Timer timer;
         private ForegroundWindowInfo previousActiveWindow;
+        private bool isLocked;
 
         public void Initialise()
         {
@@ -39,16 +40,23 @@ namespace N1self.C1selfVisualStudioExtension.ActiveWindow
 
             if (e.Reason == SessionSwitchReason.SessionLock)
             {
+                isLocked = true;
                 SendForegroundWindowEvent(properties => properties["Title"] = "Session locked");
             }
             else if (e.Reason == SessionSwitchReason.SessionUnlock)
             {
+                isLocked = false;
                 SendForegroundWindowEvent(properties => properties["Title"] = "Session unlocked");
             }
         }
 
         private void ProcessActiveWindow()
         {
+            if (isLocked)
+            {
+                return;
+            }
+
             var foregroundWindowInfo = GetForegroundWindowInfo();
 
             if (!Equals(foregroundWindowInfo, previousActiveWindow))
@@ -62,6 +70,7 @@ namespace N1self.C1selfVisualStudioExtension.ActiveWindow
 
                     properties["Title"] = foregroundWindowInfo.WindowTitle;
                 });
+
                 previousActiveWindow = foregroundWindowInfo;
             }
         }

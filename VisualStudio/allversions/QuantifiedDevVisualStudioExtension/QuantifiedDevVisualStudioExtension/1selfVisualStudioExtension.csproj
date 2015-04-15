@@ -150,6 +150,7 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActiveWindow\ActiveWindowPoller.cs" />
     <Compile Include="MyControl.xaml.cs">
       <DependentUpon>MyControl.xaml</DependentUpon>
     </Compile>
@@ -286,6 +287,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <UseCodebase>true</UseCodebase>
   </PropertyGroup>

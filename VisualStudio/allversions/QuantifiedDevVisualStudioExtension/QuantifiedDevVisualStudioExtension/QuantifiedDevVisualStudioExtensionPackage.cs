@@ -15,6 +15,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using N1self.C1selfVisualStudioExtension.ActiveWindow;
 
 namespace N1self.C1selfVisualStudioExtension
 {
@@ -138,7 +139,11 @@ namespace N1self.C1selfVisualStudioExtension
             }
 
             InitializeSendingBuildEvents();
+            activeWindowPoller = new ActiveWindowPoller();
+            activeWindowPoller.Initialise();
         }
+
+        private ActiveWindowPoller activeWindowPoller;
         #endregion
 
         /// <summary>

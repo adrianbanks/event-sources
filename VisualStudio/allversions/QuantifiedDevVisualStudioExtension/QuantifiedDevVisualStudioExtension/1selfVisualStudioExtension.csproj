@@ -151,6 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActiveWindow\ActiveWindowPoller.cs" />
+    <Compile Include="ActiveWindow\ForegroundWindowInfo.cs" />
     <Compile Include="MyControl.xaml.cs">
       <DependentUpon>MyControl.xaml</DependentUpon>
     </Compile>

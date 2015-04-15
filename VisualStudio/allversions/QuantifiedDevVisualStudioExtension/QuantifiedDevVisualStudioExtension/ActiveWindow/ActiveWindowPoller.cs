@@ -21,8 +21,11 @@ namespace N1self.C1selfVisualStudioExtension.ActiveWindow
         [DllImport("user32.dll")]
         static extern int GetWindowTextLength(IntPtr hWnd);
 
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+
         private Timer timer;
-        private string previousActiveWindowTitle;
+        private ForegroundWindowInfo previousActiveWindow;
 
         public void Initialise()
         {
@@ -32,7 +35,7 @@ namespace N1self.C1selfVisualStudioExtension.ActiveWindow
 
         private void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
         {
-            previousActiveWindowTitle = null;
+            previousActiveWindow = null;
 
             if (e.Reason == SessionSwitchReason.SessionLock)
             {
@@ -46,32 +49,57 @@ namespace N1self.C1selfVisualStudioExtension.ActiveWindow
 
         private void ProcessActiveWindow()
         {
-            string windowTitle = GetForegroundWindowTitle();
+            var foregroundWindowInfo = GetForegroundWindowInfo();
 
-            if (!string.IsNullOrWhiteSpace(windowTitle)
-                && !string.Equals(previousActiveWindowTitle, windowTitle))
+            if (!Equals(foregroundWindowInfo, previousActiveWindow))
             {
-                SendForegroundWindowEvent(properties => properties["Title"] = windowTitle);
-                previousActiveWindowTitle = windowTitle;
+                SendForegroundWindowEvent(properties =>
+                {
+                    if (!string.IsNullOrWhiteSpace(foregroundWindowInfo.Path))
+                    {
+                        properties["Process"] = foregroundWindowInfo.Path;
+                    }
+
+                    properties["Title"] = foregroundWindowInfo.WindowTitle;
+                });
+                previousActiveWindow = foregroundWindowInfo;
             }
         }
 
-        private string GetForegroundWindowTitle()
+        private ForegroundWindowInfo GetForegroundWindowInfo()
         {
             var foregroundWindow = GetForegroundWindow();
             var windowTextLength = GetWindowTextLength(foregroundWindow) + 1;
+            var windowTitle = new StringBuilder(windowTextLength);
 
             if (windowTextLength > 0)
             {
-                var windowTitle = new StringBuilder(windowTextLength);
-
-                if (GetWindowText(foregroundWindow, windowTitle, windowTextLength) > 0)
-                {
-                    return windowTitle.ToString();
-                }
+                GetWindowText(foregroundWindow, windowTitle, windowTextLength);
             }
 
-            return null;
+            var processPath = GetProcessPathFromWindowHandle(foregroundWindow);
+
+            return new ForegroundWindowInfo
+            {
+                Path = processPath,
+                WindowTitle = windowTitle.ToString()
+            };
+        }
+
+        private string GetProcessPathFromWindowHandle(IntPtr hwnd)
+        {
+            try
+            {
+                uint pid;
+                GetWindowThreadProcessId(hwnd, out pid);
+                var p = Process.GetProcessById((int) pid);
+                return p.MainModule.FileName;
+            }
+            catch (Exception exception)
+            {
+                Debug.WriteLine(exception);
+                return null;
+            }
         }
 
         private void SendForegroundWindowEvent(Action<JObject> setPropertiesCallback)

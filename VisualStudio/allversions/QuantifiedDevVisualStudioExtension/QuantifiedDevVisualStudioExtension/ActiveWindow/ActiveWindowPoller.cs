@@ -124,8 +124,8 @@ namespace N1self.C1selfVisualStudioExtension.ActiveWindow
             location["long"] = Settings.Default.Longitude;
             activityEvent["location"] = location;
 
-            activityEvent["actionTags"] = new JArray("Sample");
-            activityEvent["objectTags"] = new JArray("Computer", "ActiveWindow");
+            activityEvent["actionTags"] = new JArray("focus");
+            activityEvent["objectTags"] = new JArray("computer", "active-window");
 
             JObject properties = new JObject();
             setPropertiesCallback(properties);
